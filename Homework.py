@@ -8,43 +8,35 @@ Created on Sun Mar  8 18:56:13 2020
 import numpy as np
 from WrenchUtils import PTrans 
 from matplotlib import pyplot as plt
-import scipy as sp
 from scipy import spatial as sp_spatial
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d as a3
-import matplotlib as mpl
 
 m = 1 # mass of the block
-g = -1 # gravitational acceleration
+g = -10 # gravitational acceleration
 mu_s = 0.5 # coefficient of friction between support and block
 N = 1 # normal force from the gripper
 r = 0.05 # radius of contact (meters)
 k = 0.6*r
 # calculating limit surface
 A = np.diag([1/(mu_s*N)**2, 1/(mu_s*N)**2, 1/(k*mu_s*N)**2])
-s = np.array([0.5,0,0])
+s = np.array([0.125,0,0])
 Js = np.transpose(PTrans(s[0],s[1],s[2]))
 
 
 # calculate generalized friction cone
-P1 = np.array([1, 1]) # location of pusher contact
-P2 = np.array([1,-1]) # location of pusher contact 2
+P1 = np.array([-.25, 0.25]) # location of pusher contact
+P2 = np.array([-.25,-0.25]) # location of pusher contact 2
 
 def calcJpt(P1,P2):
     # calculate the Jacobian from the pusher contact frames to the object
     Jp1t = np.transpose(PTrans(P1[0], P1[1], 0)) # Jacobian from Pusher point 1 to object
     Jp2t = np.transpose(PTrans(P2[0], P2[1], 0)) # Jacobian from Pusher point 2 to object
     return np.column_stack((Jp1t[:,0:2], Jp2t[:,0:2])) # combined Jacobian
-
-def totuple(a):
-    try:
-        return tuple(totuple(i) for i in a)
-    except TypeError:
-        return a
     
 Jpt = calcJpt(P1,P2)
 # create generalized friction cone
-Fn = 1
+Fn = -m*g/mu_s
 Ft = Fn*mu_s
 
 F1 = np.transpose(np.array([Fn,Ft,0,0]))
@@ -62,14 +54,16 @@ hull = sp_spatial.ConvexHull(points)
 indices = hull.simplices
 faces = points[indices]
 
-fig = plt.figure()
+# plotting friction cone
+fig = plt.figure(1)
+plt.clf()
 ax = Axes3D(fig)
 for f in faces:
     face = a3.art3d.Poly3DCollection([f])
     face.set_edgecolor('k')
     face.set_alpha(0.5)
     ax.add_collection3d(face)
-
+ax.autoscale_view()
 # %% creating motion cone
 G = np.transpose(np.array([0,g,0]))
 Js_inv = np.linalg.inv(Js)
@@ -82,3 +76,17 @@ Vobj1 = calcVobj(W1)
 Vobj2 = calcVobj(W2)
 Vobj3 = calcVobj(W3)
 Vobj4 = calcVobj(W4)
+
+# plotting motion cones
+points = np.row_stack((origin,Vobj1,Vobj2,Vobj3,Vobj4))
+hull = sp_spatial.ConvexHull(points)
+indices = hull.simplices
+faces2 = points[indices]
+fig = plt.figure(2)
+plt.clf()
+ax = Axes3D(fig)
+for f in faces2:
+    face = a3.art3d.Poly3DCollection([f])
+    face.set_edgecolor('k')
+    face.set_alpha(0.5)
+    ax.add_collection3d(face)
