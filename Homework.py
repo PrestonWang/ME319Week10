@@ -15,7 +15,7 @@ import mpl_toolkits.mplot3d as a3
 m = 1 # mass of the block
 g = -10 # gravitational acceleration
 mu_s = 0.5 # coefficient of friction between support and block
-N = 1 # normal force from the gripper
+N = 10 # normal force from the gripper
 r = 0.05 # radius of contact (meters)
 k = 0.6*r
 # calculating limit surface
