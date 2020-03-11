@@ -42,7 +42,6 @@ def draw_polygon(points,ax):
         face.set_edgecolor('k')
         face.set_alpha(0.5)
         ax.add_collection3d(face)
-    plt.show()
 
 # DEFINE CONSTANTS
 m = 0.25        # mass of the block
@@ -125,6 +124,7 @@ ax.set_xlabel('X')
 ax.set_ylabel('Z')
 ax.set_zlabel('My')
 plt.title('Pusher Wrench and Limit Surface')
+plt.show()
 
 fig = plt.figure(2)
 plt.clf()
@@ -138,6 +138,6 @@ ax2.set_xlabel('Tx')
 ax2.set_ylabel('Tz')
 ax2.set_zlabel('Wy')
 plt.title('Motion Cone')
-
+plt.show()
 
 
