@@ -1,3 +1,8 @@
+'''
+ME319 Week 10 Code
+3/11/2020
+'''
+
 import numpy as np
 from WrenchUtils import PTrans 
 import matplotlib.pyplot as plt
@@ -5,6 +10,8 @@ import mpl_toolkits.mplot3d as a3
 from scipy import spatial as sp_spatial
 from sympy import nsolve, symbols
 
+
+# Functions to help with plotting the limit surface and cones
 def plot_ellipsoid(A, ax): 
 	# your ellispsoid and center in matrix form
 	center = [0,0,0]
@@ -38,12 +45,14 @@ def draw_polygon(points,ax):
     plt.show()
 
 # DEFINE CONSTANTS
-m = 1       # mass of the block
-g = 1     # gravitational acceleration
-mu_s = 0.5  # coefficient of friction between support and block
-N = 10      # normal force from the gripper
-r = 1       # radius of contact (meters)
-k = 0.6*r   # moment resistance constant
+m = 0.25        # mass of the block
+g = 9.8         # gravitational acceleration
+mu_s = 0.5      # coefficient of friction between support and block
+N = 10          # normal force from the gripper
+r = 1           # radius of contact (meters)
+k = 0.6*r       # support moment resistance constant
+Fn = 5          # normal force from pusher (N)
+Ft = Fn*mu_s    # corresponding tangential force
 
 
 # STEP 1: CALCULATE LIMIT SURFACE
@@ -59,10 +68,6 @@ Prot = 0
 Jp1  = PTrans(Px, Pz1, Prot)[0:2,:]  
 Jp2  = PTrans(Px, Pz2, Prot)[0:2,:]
 Jp = np.vstack((Jp1, Jp2, Jp2, Jp1))
-
-# create generalized friction cone
-Fn = 5
-Ft = Fn*mu_s
 
 # Substep b: Calculate pusher wrench 
 # See figure in Table 1 for reference
@@ -88,9 +93,7 @@ w_gravity = np.array([0,m*g,0])
 
 # Define B, wrench on a unit limit surface 
 B = np.diag((1, 1, k**(-2)))
-
 k = symbols('k',real = True)
-
 # function to calculate object velocities
 def calculate_object_velocity(W): 
     wLength = W.shape[0]
@@ -98,13 +101,13 @@ def calculate_object_velocity(W):
     for i in range(wLength):
         wpusher = W[i]/np.linalg.norm(W[i])
         ##############################
-        # TODO: Determine the 
-        # Calculate v_object for a given pusher unit wrench
+        # TODO: 
+        # Calculate v_object for a given pusher unit wrench. v_obj should be a 3x1 unit vector
         ws_temp = np.linalg.inv(Js.T).dot(-w_gravity - k*wpusher)/(mu_s*N)
         ksol = float(nsolve(ws_temp[0]**2 + ws_temp[1]**2 + (ws_temp[2]**2)/(0.6*r)**2 - 1, k, 1))
         ws_bar = -np.linalg.inv(Js.T).dot(-w_gravity - ksol*wpusher)/(mu_s*N)
-        v_obj = np.linalg.inv(Js.T).dot(B).dot(ws_bar)
-        v_obj = v_obj / np.linalg.norm(v_obj)
+        v_obj = (mu_s*N)*np.linalg.inv(Js.T).dot(B).dot(ws_bar)
+        #v_obj = v_obj / np.linalg.norm(v_obj)
         ##############################
         V[i] = v_obj
     return V
@@ -112,7 +115,7 @@ def calculate_object_velocity(W):
 V = calculate_object_velocity(W)
 
 
-#%% P
+#%% Plotting Limit Surface, Pusher Wrench and 
 # Plot motion cones
 origin = [0,0,0]
 velocityVec = np.row_stack((origin,V))
@@ -128,11 +131,15 @@ ax.set_zlabel('My')
 
 fig = plt.figure(2)
 plt.clf()
+X = velocityVec[:,0]
+Y = velocityVec[:,1]
+Z = velocityVec[:,2]
 ax2 = fig.add_subplot(111, projection='3d')
+ax2.plot(X,Y,Z)
 draw_polygon(velocityVec,ax2)
-ax.set_xlabel('X')
-ax.set_ylabel('Z')
-ax.set_zlabel('My')
+ax2.set_xlabel('Tx')
+ax2.set_ylabel('Tz')
+ax2.set_zlabel('Wy')
 
 
 
