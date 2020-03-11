@@ -103,7 +103,10 @@ def calculate_object_velocity(W):
         ##############################
         # TODO: 
         # Calculate v_object for a given pusher unit wrench. v_obj should be a 3x1 unit vector
-
+        ws_temp = np.linalg.inv(Js.T).dot(-w_gravity - k*wpusher)/(mu_s*N)
+        ksol = float(nsolve(ws_temp[0]**2 + ws_temp[1]**2 + (ws_temp[2]**2)/(0.6*r)**2 - 1, k, 1))
+        ws_bar = -np.linalg.inv(Js.T).dot(-w_gravity - ksol*wpusher)/(mu_s*N)
+        v_obj = (mu_s*N)*np.linalg.inv(Js.T).dot(B).dot(ws_bar)
         ##############################
         V[i] = v_obj
     return V
