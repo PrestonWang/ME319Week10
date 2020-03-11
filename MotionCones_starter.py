@@ -61,9 +61,9 @@ A = np.diag([1/(mu_s*N)**2, 1/(mu_s*N)**2, 1/(k*mu_s*N)**2])
 
 # STEP 2: CALCULATE GENERALIZED FRICTION CONE (set of wrenches the pusher can apply on the object) 
 # Substep a: Calculate Jp: Jacobian that maps object velocity (in object frame) to the velocity at the pusher point contact frames
-Px = -0.15
-Pz1 = -0.0625
-Pz2  = 0.0625
+Px = -.2
+Pz1 = -0.1
+Pz2  = 0.1
 Prot = 0
 Jp1  = PTrans(Px, Pz1, Prot)[0:2,:]  
 Jp2  = PTrans(Px, Pz2, Prot)[0:2,:]
@@ -83,7 +83,7 @@ W = np.row_stack((W1,W2,W3,W4))
 
 # STEP 3: CALCULATE OBJECT VELOCITY
 # Calculate Js
-Sx = 0.0625
+Sx = .1
 Sz   = 0
 Srot = 0
 Js = PTrans(Sx, Sz, Srot)  # Jacobian that maps v_obj (in object frame) to v_s (in support frame)
