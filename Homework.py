@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 from scipy import spatial as sp_spatial
 from mpl_toolkits.mplot3d import Axes3D
 import mpl_toolkits.mplot3d as a3
-
+from sympy import nsolve, symbols
 m = 1 # mass of the block
 g = -10 # gravitational acceleration
 mu_s = 0.5 # coefficient of friction between support and block
@@ -36,10 +36,10 @@ def calcJpt(P1,P2):
     
 Jpt = calcJpt(P1,P2)
 # create generalized friction cone
-Fn = -m*g/mu_s
+Fn = 1
 Ft = Fn*mu_s
 
-F1 = np.transpose(np.array([Fn,Ft,0,0]))
+F1 = np.transpose(np.array([Fn,Ft,Fn,Ft]))
 F2 = np.transpose(np.array([Fn,-Ft,0,0]))
 F3 = np.transpose(np.array([0,0,Fn,Ft]))
 F4 = np.transpose(np.array([0,0,Fn,-Ft]))
@@ -65,11 +65,11 @@ for f in faces:
     ax.add_collection3d(face)
 ax.autoscale_view()
 # %% creating motion cone
-G = np.transpose(np.array([0,g,0]))
+w_gravity = np.transpose(np.array([0,m*g,0]))
 Js_inv = np.linalg.inv(Js)
 B = np.diag([1,1,k**-2])
 def calcVobj(W):
-    Ws = np.dot(Js_inv,(-W-m*G)/(mu_s*N))
+    Ws = np.dot(Js_inv,(-W-w_gravity)/(mu_s*N))
     Vobj = np.dot(np.dot(Js_inv,B),Ws)
     return Vobj/np.linalg.norm(Vobj)
 Vobj1 = calcVobj(W1)
@@ -90,3 +90,9 @@ for f in faces2:
     face.set_edgecolor('k')
     face.set_alpha(0.5)
     ax.add_collection3d(face)
+
+#%%
+wpusher = W1/np.linalg.norm(W1)
+k = symbols('k',real = True)
+ws_temp = np.linalg.inv(Js).dot(-w_gravity - k*wpusher)/(mu_s*N)
+nsolve(ws_temp[0]**2 + ws_temp[1]**2 + (ws_temp[2]**2)/(0.6*r)**2 - 1, k, 0)
